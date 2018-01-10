@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "搭建基于jekyll和github pages的个人站点"
-date:   2018-01-08 14:07:00 +0800
+date:   2018-01-08 19:07:00 +0800
 categories: jekyll update
 ---
 
