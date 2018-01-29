@@ -7,6 +7,7 @@ categories: jekyll update
 
 # 要事优先 #
 
+{% include copyright.md %}
 {% include 15-secrets-introduction.md %}
 
 ## 你的第一目标是什么? ##

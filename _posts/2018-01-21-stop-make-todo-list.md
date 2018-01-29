@@ -7,6 +7,7 @@ categories: jekyll update
 
 # 停止做任务清单 #
 
+{% include copyright.md %}
 {% include 15-secrets-introduction.md %}
 
 ## 亿万富翁不会做任务清单 ##

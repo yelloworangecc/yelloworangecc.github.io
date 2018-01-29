@@ -7,6 +7,7 @@ categories: jekyll update
 
 # 日期和时间 #
 
+{% include copyright.md %}
 {% include org-introduction.md %}
 
 ## 时间戳 ##
