@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "QT系列学习笔记:源对象编译器"
+title:  "QT系列学习笔记:元对象编译器"
 date:   2018-01-28 22:25:16 +0800
 categories: jekyll update
 ---
