@@ -1,16 +1,10 @@
 ---
 layout: post
-title:  "高效15法则系列读书笔记:克服拖延症"
-date:   2018-02-12 22:19:48 +0800
-categories: jekyll update
+title:  "高效15法则: 克服拖延症"
+summary: 你要明白人的情绪无时不刻不在变化,不要高估自己在未来的动力或意志力.
+featured-img: sleek
+# categories: jekyll update
 ---
-
-# 克服拖延症 #
-
-{% include copyright.md %}
-{% include 15-secrets-introduction.md %}
-
-
 ## 拖延症和懒惰并无关系 ##
 
 拖延症是指把重要但无趣的任务推迟,去做相对来说更简单更让人愉快的任务.重要但无趣的任务可能是准备学术演讲或者撰写技术方案等;简单愉快的任务可能是查看邮件,浏览社交网站,边吃东西边看电视或者打一局王者荣耀等.

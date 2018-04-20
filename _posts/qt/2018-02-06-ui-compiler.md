@@ -1,17 +1,13 @@
 ---
 layout: post
-title:  "QT系列学习笔记:UI编译器"
-date:   2018-02-06 21:41:51 +0800
-categories: jekyll update
+title:  "QT4: UI编译器"
+summary: UI编译器(uic)适用于Qt Widgets模块,它读取一个XML格式的用户界面定义文件(.ui)并创建一个对应的C++头文件.
+featured-img: sleek
+# categories: jekyll update
 ---
-# UI编译器 #
-
-{% include copyright.md %}
-{% include qt-introduction.md %}
-
 ## 用法 ##
 
-UI编译器(uic)适用于Qt Widgets模块,它读取一个XML格式的用户界面定义文件(.ui)并创建一个对应的C++头文件.`.ui`文件有Qt Designer创建.Qt Widgets模块提供了用于创建经典桌面风格用户界面的UI元素集合.Qt还提供了Qt Quick和Qt webEngine用于不同场景下的UI开发.
+UI编译器(uic)适用于Qt Widgets模块,它读取一个XML格式的用户界面定义文件(.ui)并创建一个对应的C++头文件.`.ui`文件由Qt Designer创建.Qt Widgets模块提供了用于创建经典桌面风格用户界面的UI元素集合.Qt还提供了Qt Quick和Qt webEngine用于不同场景下的UI开发.
 uic的用法:`uic [options] <uifile>`
 uic的命令行选项如下:
 

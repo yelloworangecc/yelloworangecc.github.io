@@ -1,14 +1,10 @@
 ---
 layout: post
-title:  "QT系列学习笔记:布局管理"
-date:   2018-02-22 21:15:23 +0800
-categories: jekyll update
+title:  "QT4: 布局管理"
+summary: Qt的布局管理系统提供了一个简单而强大的在窗口中自动管理窗口部件的方式,能够保证程序有效利用窗口空间.
+featured-img: sleek
+# categories: jekyll update
 ---
-# 布局管理 #
-
-{% include copyright.md %}
-{% include qt-introduction.md %}
-
 ## 什么是布局管理 ##
 
 Qt的布局管理系统提供了一个简单而强大的在窗口中自动管理窗口部件的方式,能够保证程序有效利用窗口空间.

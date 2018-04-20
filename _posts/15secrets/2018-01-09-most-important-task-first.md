@@ -1,15 +1,10 @@
 ---
 layout: post
-title:  "高效15法则系列读书笔记:要事优先"
-date:   2018-01-09 20:12:00 +0800
-categories: jekyll update
+title:  "高效15法则: 要事优先"
+summary: 专注一个目标才能取得成功.
+featured-img: sleek
+# categories: jekyll update
 ---
-
-# 要事优先 #
-
-{% include copyright.md %}
-{% include 15-secrets-introduction.md %}
-
 ## 你的第一目标是什么? ##
 
 谚语和名人说过:

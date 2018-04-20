@@ -1,15 +1,10 @@
 ---
 layout: post
-title:  "Emacs Org模式系列学习笔记:日期和时间"
-date:   2018-01-22 19:50:07 +0800
-categories: jekyll update
+title:  "Emacs Org: 日期和时间"
+summary: emacs的org模式可以为TODO项目打上时间和日期标签,这个标签也叫"时间戳".
+featured-img: sleek
+# categories: jekyll update
 ---
-
-# 日期和时间 #
-
-{% include copyright.md %}
-{% include org-introduction.md %}
-
 ## 时间戳 ##
 
 emacs的org模式可以为TODO项目打上时间和日期标签,这个标签也叫"时间戳".

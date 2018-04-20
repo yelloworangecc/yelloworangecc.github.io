@@ -1,16 +1,10 @@
 ---
 layout: post
-title:  "QT系列学习笔记:资源编译器"
-date:   2018-02-05 20:45:39 +0800
-categories: jekyll update
+title:  "QT4: 资源编译器"
+summary: QT资源系统是独立于平台的,存储二进制文件到应用的可执行程序的体系.资源系统提供的rrc工具可以在编译过程中嵌资源到qt应用程序.
+featured-img: sleek
+# categories: jekyll update
 ---
-
-# 资源编译器 #
-
-{% include copyright.md %}
-{% include qt-introduction.md %}
-
-
 ## 用法 ##
 
 rrc工具用于在编译过程中嵌入资源到qt应用程序,通过生成一个包含qt资源文件中指定的数据的C++源文件来实现.

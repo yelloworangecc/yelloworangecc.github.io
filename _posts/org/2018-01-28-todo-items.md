@@ -1,15 +1,10 @@
 ---
 layout: post
-title:  "Emacs Org模式系列学习笔记:TODO项"
-date:   2018-01-28 21:49:26 +0800
-categories: jekyll update
+title:  "Emacs Org: TODO项"
+summary: org采用集成TODO项到笔记文件内的方式管理TODO列表,因为TODO项通常会在记笔记的过程中产生.org模式只需为笔记文件的树结构中某个实体打上标记就可以把它作为TODO项进行管理.
+featured-img: sleek
+# categories: jekyll update
 ---
-
-# TODO项 #
-
-{% include copyright.md %}
-{% include org-introduction.md %}
-
 ## 基本的TODO功能 ##
 
 org采用集成TODO项到笔记文件内的方式管理TODO列表,因为TODO项通常会在记笔记的过程中产生.在org模式中,只需简单的为树结构中某个实体打上标记就可以把它作为TODO项进行管理.这种方式与TODO列表和笔记分离的方式相比没有重复信息,并且在TODO项出现的地方总是有相关的完整的上下文可供参考.当然这种方式也使得的TODO项分散在整个笔记文件中.org模式通过提供额外的方式汇总显示所有你要做的事.
