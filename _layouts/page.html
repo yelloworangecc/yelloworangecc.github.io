@@ -21,6 +21,9 @@ layout: compress
     <div class="hero--small">
       <div class="hero__wrap">
         <h1 class="hero__title">{{ page.title }}</h1>
+	{% if page.subtitle %}
+	<h2 class="hero__title">{{ page.subtitle}}</h2>
+	{% endif %}
       </div>
     </div>
     <main class="site__content">
