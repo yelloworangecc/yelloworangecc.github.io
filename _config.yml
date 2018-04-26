@@ -14,8 +14,8 @@ social:
     - https://www.linkedin.com/in/BenBalter
     - https://github.com/turnipbun
 
-disqus:
-  shortname: yelloworangecc # to enable comments replace with your_disqus_shortname
+# disqus:
+#   shortname: yelloworange
 
 # Build settings
 markdown: kramdown
