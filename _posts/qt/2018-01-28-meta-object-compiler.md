@@ -2,7 +2,7 @@
 layout: post
 title:  "QT4: 元对象编译器"
 summary: 元对象编译器(moc)是用来处理QT源代码文件的C++扩展的程序,用来满足信号和槽机制对运行时类型信息和动态属性系统的要求.
-featured-img: sleek
+featured-img: qt
 # categories: jekyll update
 ---
 ## 什么是元对象编译器 ##

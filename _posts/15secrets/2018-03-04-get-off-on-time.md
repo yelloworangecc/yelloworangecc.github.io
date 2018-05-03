@@ -2,7 +2,7 @@
 layout: post
 title:  "高效15法则: 零负担下班"
 summary: 当我们感觉累了,或者整备好回家时,我们一天的工作就结束了,而不是当我完成了我的任务时一天才结束.
-featured-img: sleek
+featured-img: 15
 # categories: jekyll update
 ---
 ## 顶级精英总是看上去无压力 ##

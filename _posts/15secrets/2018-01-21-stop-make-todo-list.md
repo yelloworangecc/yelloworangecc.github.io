@@ -2,7 +2,7 @@
 layout: post
 title:  "高效15法则: 停止做任务清单"
 summary: 任务清单在某种程度上来说是烦人的愿望清单,没有明确的计划说明什么时候要把它做好.
-featured-img: sleek
+featured-img: 15
 # categories: jekyll update
 ---
 ## 亿万富翁不会做任务清单 ##

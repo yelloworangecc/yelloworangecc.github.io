@@ -2,7 +2,7 @@
 layout: post
 title:  "QT4: qmake工程文件简介"
 summary: 工程文件包含了给qmake使用的,用于构建应用程序,库和插件的所有信息.
-featured-img: sleek
+featured-img: qt
 # categories: jekyll update
 ---
 ## 工程文件元素 ##

@@ -2,7 +2,7 @@
 layout: post
 title:  "高效15法则: 克服拖延症"
 summary: 你要明白人的情绪无时不刻不在变化,不要高估自己在未来的动力或意志力.
-featured-img: sleek
+featured-img: 15
 # categories: jekyll update
 ---
 ## 拖延症和懒惰并无关系 ##

@@ -2,7 +2,7 @@
 layout: post
 title:  "高效15法则: 要事优先"
 summary: 专注一个目标才能取得成功.
-featured-img: sleek
+featured-img: 15
 # categories: jekyll update
 ---
 ## 你的第一目标是什么? ##
