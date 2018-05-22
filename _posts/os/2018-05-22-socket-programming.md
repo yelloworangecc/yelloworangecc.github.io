@@ -58,6 +58,7 @@ int getsockopt(int socket, int level, int option_name,
 int setsockopt(int socket, int level, int option_name,
          const void *option_value, socklen_t option_len);
 ```
+
 **说明:**
   * 函数操作socket的选项.选项可能存在于多个协议层级,但总表现在最高层的socket层.
   * 当操作socket的选项时,必须指定选项所处的层级和选项的名字.在socket层操作时,参数`level`被制定为`SOL_SOCKET`.在其他层级操作时,需要提供选项所处协议的协议号.例如,为了明确一个选项是有TCP协议负责解释的,参数`level`应当被设置为TCP的协议号.
@@ -85,8 +86,10 @@ int setsockopt(int socket, int level, int option_name,
 	- `SO_NREAD` 获取可读数据个数
 	- `SO_NWRITE` 获取待发数据个数
 	- `SO_LINGER_SEC` 设置关闭等待时间
+
 **返回值:**
   * 成功时返回0,否则返回-1并将错误码保存到全局变量.
+
 **错误码:**
   * [EBADF] 参数`socket`不是合法的文件描述符.
   * [EFAULT] 参数`option_value`指定的地址不是合法的线程地址空间的地址.
@@ -100,7 +103,6 @@ int setsockopt(int socket, int level, int option_name,
   * [EINVAL] socket已经被关闭.
 
 ## bind ##
-
 **原型:**
 ```
 int bind(int socket, const struct sockaddr *address, socklen_t address_len);
@@ -138,7 +140,6 @@ int bind(int socket, const struct sockaddr *address, socklen_t address_len);
   * [EROFS] 只读文件系统.
 
 ## listen ##
-
 **原型:**
 ```
 int listen(int socket, int backlog);
@@ -160,7 +161,6 @@ int listen(int socket, int backlog);
   * [EOPNOSUPP] socket的类型不支持`listen`函数.
 
 ## accept ##
-
 **原型:**
 ```
 int accept(int socket, struct sockaddr *restrict address, socklen_t *restrict address_len);
@@ -195,6 +195,7 @@ int accept(int socket, struct sockaddr *restrict address, socklen_t *restrict ad
 int select(int nfds, fd_set *restrict readfds, fd_set *restrict writefds,
            fd_set *restrict errorfds, struct timeval *restrict timeout);
 ```
+
 **说明:**
   * 函数检查IO描述符集合,几个的地址由参数`readfds`,`writefds`和`errorfds`传入,用来检查描述符是准备好读写或者出现了异常.第一个参数`nfds`描述符会在每个集合中检查,举例来说,从0到`nfds`-1的所有描述符会被检查.(如果你的集合中有两个文件描述符4和17,`nfds`不应该为2而应该为18).在返回时,符合要求的一个描述符的子集替换传入的集合,并且返回集合中就绪的描述符的个数.
   * 描述符集合以比特位的方式存储在整数类型的数组中.以下是操作这样的描述符集合的函数:
@@ -206,8 +207,10 @@ int select(int nfds, fd_set *restrict readfds, fd_set *restrict writefds,
 	描述符小于0,大于`FD_SETSIZE`时,这些函数的行为是未定义的.
   * 如果参数`timeout`是一个非空指针,它指定了函数等待完成的最长时间间隔.如果为空,函数将会无限期的阻塞.为了能轮询,参数`timeout`应该为非空,并且指向一个值为0的`timeval`结构体.参数`timeout`不会被`select`函数修改,并且可以被后续的滴啊用复用,然而,推荐每次调用`select`时都重新初始化.
   * 如果没有感兴趣的描述符,参数`readfds`,`writefds`和`errorfds`可以为空.
+
 **返回值:**
   * 成功返回就绪描述符的数量,失败返回-1.如果超时,函数返回0.失败时,描述符集合不会被修改,并且在`errno`中设置了错误码.
+
 **错误码:**
   * [EAGAIN] 内核无法分配资源.
   * [EBADF] 描述符集合中存在非法值.
@@ -223,6 +226,7 @@ ssize_t sendmsg(int socket, const struct msghdr *message, int flags);
 ssize_t sendto(int socket, const void *buffer, size_t length, int flags,
          const struct sockaddr *dest_addr, socklen_t dest_len);
 ```
+
 **说明:**
   * 函数用于向另一个socket传输消息.`send`只能用于建立了连接的socket,`sendto`和`sendmsg`适用于任何情况.
   * 目标的地址由参数`dest_addr`和`dest_len`指定.消息的长度由`length`指定.如果消息的长度超过协议定义的范围,函数不会传输消息并且会返回错误码`EMSGSIZE`.
@@ -232,8 +236,10 @@ ssize_t sendto(int socket, const void *buffer, size_t length, int flags,
     - `MSG_OOB` 用于传输带外数据,像`SOCK_STREAM`类型的socket支持这种操作,另外协议类型也需要支持.
 	- `MSG_DONTROUTE` 用于路由程序的诊断.
   * `sendmsg`系统调用使用`msghdr`结构体来减少直接传递的参数.`msg_iov`和`msg_iovlen`字段用于指定0个或更多用户存储待发数据的缓冲区.`msg_iov`指向`iovec`的数组,`msg_iovlen`应该设置为这个数组的尺寸.在每一个`iovec`结构中,`iov_base`字段指定了一个存储空间,`iov_len`给出了空间的大小(以字节为单位,可以为0).在每一个`msg_iov`指定的存储空间中的数据将被轮流发送.
+
 **返回值:**
   * 成功时返回已经发送的字节数,否则返回-1并且将错误码保存到全局变量`errno`.
+
 **错误码:**
   * [EACCES] socket未设置`SO_BROADCAST`选项但使用了广播地址作为目标地址.
   * [EAGAIN] socket被标记为非阻塞,但请求操作仍然被阻塞.
@@ -268,6 +274,7 @@ ssize_t recvfrom(int socket, void *restrict buffer, size_t length,
 				 socklen_t *restrict address_len);
 ssize_t recvmsg(int socket, struct msghdr *message, int flags);
 ```
+
 **描述:**
   * 系统调用`recvfrom`和`recvmsg`用来从socket接收消息,可以用于接收面向连接或无连接的数据.
   * 如果参数`address`不是一个空指针,并且socket是无连接的,函数会填入消息的源地址.参数`address_len`既是入参也是出参,应当初始化为参数`address`所指空间的大小,并在函数返回时修改为实际地址所占用的空间.
@@ -292,9 +299,11 @@ struct msghdr {
              int             msg_flags;      /* flags on received message */
      };
 ```
+
 **返回值:**
   * 成功返回接收的字节数,否则返回-1.
   * 对于TCP,返回0意味着对端单方面关闭了连接.
+
 **错误码:**
   * [EAGAIN] socket标记为非阻塞单接收操作仍然会阻塞,或者设置了接收超时时间并且达到超时时间.
   * [EBADF] 参数`socket`不是合法的描述符.
@@ -310,4 +319,3 @@ struct msghdr {
   * [EINVAL] `iov_len`的值溢出.
   * [EMSGSIZE] 参数`msghdr`的成员`msg_iovlen`的值非法.
   * [ENOMEM] 内存不足.
-
