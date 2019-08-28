@@ -1,11 +1,11 @@
 ---
 layout: post
 title:  "ssh反向代理配置"
-summary: ""
+summary: "利用树莓派和云主机搭建反向代理访问家庭网络"
 featured-img: os
 # comments: true
 ---
-## 环境描述 ##
+**环境描述**
 1. raspi:家庭网络中的raspberry pi主机
 2. cloud:腾讯云主机
 3. test:单位里的主机,用于测试
