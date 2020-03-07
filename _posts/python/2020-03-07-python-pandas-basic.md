@@ -84,5 +84,5 @@ for company in companies:
 
 ## 运行结果 ##
 
-![运行结果1](/pics/excel_resualt1.png "运行结果1")
-![运行结果2](/pics/excel_resualt2.png "运行结果2")
+![运行结果1](/pics/excel_result1.png "运行结果1")
+![运行结果2](/pics/excel_result2.png "运行结果2")
