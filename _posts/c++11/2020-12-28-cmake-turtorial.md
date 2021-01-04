@@ -199,7 +199,7 @@ cmake .. -DUSE_MYMATH=OFF
 重新构建和运行tutorial程序.
 sqrt和mysqrt哪一个函数得到的值更准确?
 
-## 步骤4 增加库的使用要求 ##
+## 步骤三 增加库的使用要求 ##
 "使用要求"允许对库或可执行文件的链接和包含关系进行更好的控制,同时对CMake内部目标的传递属性给与更多控制.涉及的主要命令如下.
 ```
 target_compile_definitions()
@@ -229,4 +229,67 @@ target_include_directories(Tutorial PUBLIC
 ```
 完成后,在构建目录中运行cmake或cmake-gui配置项目并使用你指定的构建工具执行构建动作即可.
 
-## 未完待续 ##
+## 步骤四 安装和测试 ##
+现在,我们可以给我们的项目添加安装规则和测试支持.
+
+### 安装规则 ###
+安装规则相当简单:我们希望为MathFunctions安装库和头文件,为应用程序安装可执行文件和配置头文件.
+因此在MathFunctions/CMakeLists.txt文件末尾添加如下内容:
+```
+install(TARGETS MathFunctions DESTINATION lib)
+install(FILES MathFunctions.h DESTINATION include)
+```
+在顶层CMakeLists.txt文件末尾添加如下内容
+```
+install(TARGETS Tutorial DESTINATION bin)
+install(FILES "${PROJECT_BINARY_DIR}/TutorialConfig.h"
+  DESTINATION include
+  )
+```
+以上就创建了一个基础本地安装了.
+现在运行cmake或cmakej-gui来配置项目,然后使用你指定的构建工具执行构建动作.
+接着在命令行中使用cmake的install选项执行安装步骤.对于多配置工具,不要忘记使用--config来指定一个配置.如果使用了IDE,那么构建INSTALL目标即可.这一步会安装合适的头文件,库和可执行文件.
+```
+cmake --install .
+```
+cmake的CMAKE_INSTALL_PREFIX变量用来指定文件被安装的根目录.在使用cmake --install命令时,可以使用--prefix选项覆盖变量已有的值.
+```
+cmake --install . --prefix "/home/myuser/installdir"
+```
+现在进入安装目录,检查命令是否执行成功.
+
+### 测试支持 ###
+下一步,让我们测试应用程序.在顶层CMakeLists.txt文件末尾开启测试功能,然后添加一些基础测试用例来验证程序是否正确执行.
+```
+enable_testing()
+
+# 测试程序是否运行
+add_test(NAME Runs COMMAND Tutorial 25)
+
+# 测试帮助信息是否正确
+add_test(NAME Usage COMMAND Tutorial)
+set_tests_properties(Usage
+  PROPERTIES PASS_REGULAR_EXPRESSION "Usage:.*number"
+  )
+
+# 顶一个函数来添加测试用例
+function(do_test target arg result)
+  add_test(NAME Comp${arg} COMMAND ${target} ${arg})
+  set_tests_properties(Comp${arg}
+    PROPERTIES PASS_REGULAR_EXPRESSION ${result}
+    )
+endfunction(do_test)
+
+# 执行一系列的基础测试
+do_test(Tutorial 4 "4 is 2")
+do_test(Tutorial 9 "9 is 3")
+do_test(Tutorial 5 "5 is 2.236")
+do_test(Tutorial 7 "7 is 2.645")
+do_test(Tutorial 25 "25 is 5")
+do_test(Tutorial -25 "-25 is [-nan|nan|0]")
+do_test(Tutorial 0.0001 "0.0001 is 0.01")
+```
+第一个测试用例简单地测试了程序是否运行起来并且返回0.失败的情况是出现段错误或程序崩溃.这也是ctest最基础的测试用例.
+下一个测试用例使用了测试属性PASS_REGULAR_EXPRESSION来验证测试的输出是否包含特定的字符串.在本例中,当参数数目不正确时,检查帮助信息是否被打印.
+最后,我们创建了do_test函数来运行应用程序并测试给定的输入数值的平方根是否被正确计算.对于每一个do_test,用项目名称,输入,基于输入的期望结果来增加一个新的测试用例.
+重新构建应用程序并切换到二进制目录,运行ctest可执行程序(ctest -N 或test -VV).对于多配置生成器(如Visual Studio),还必须指定配置类型.调试模式下,在构建目录下运行ctest -C Debug -VV.或者,在IDE中构建RUN_TESTS目标.
