@@ -293,3 +293,79 @@ do_test(Tutorial 0.0001 "0.0001 is 0.01")
 下一个测试用例使用了测试属性PASS_REGULAR_EXPRESSION来验证测试的输出是否包含特定的字符串.在本例中,当参数数目不正确时,检查帮助信息是否被打印.
 最后,我们创建了do_test函数来运行应用程序并测试给定的输入数值的平方根是否被正确计算.对于每一个do_test,用项目名称,输入,基于输入的期望结果来增加一个新的测试用例.
 重新构建应用程序并切换到二进制目录,运行ctest可执行程序(ctest -N 或test -VV).对于多配置生成器(如Visual Studio),还必须指定配置类型.调试模式下,在构建目录下运行ctest -C Debug -VV.或者,在IDE中构建RUN_TESTS目标.
+
+## 步骤5 增加系统自省 ##
+考虑这种情况,我们向项目中添加一些代码,这些代码依赖的特性在目标平台不具备.例如,我们添加了一些依赖于log和exp函数的代码,目标平台是否支持这两个函数并不清楚.(当然,现实场景下几乎每一个平台都会提供这些函数.)
+如果平台有log和exp函数,那么我们将在mysqrt函数中使用它们来计算平方根.首先我们在顶层CMakeLists.txt中使用CheckSymbolExists模块来测试函数是否可用.如果找不到函数,那么我们尝试在库中查找.
+这种方式会在文件TutorialConfig.h.in中定义新的宏,所以确保以下语句位于设置配置文件语句前.
+```
+include(CheckSymbolExists)
+check_symbol_exists(log "math.h" HAVE_LOG)
+check_symbol_exists(exp "math.h" HAVE_EXP)
+if(NOT (HAVE_LOG AND HAVE_EXP))
+  unset(HAVE_LOG CACHE)
+  unset(HAVE_EXP CACHE)
+  set(CMAKE_REQUIRED_LIBRARIES "m")
+  check_symbol_exists(log "math.h" HAVE_LOG)
+  check_symbol_exists(exp "math.h" HAVE_EXP)
+  if(HAVE_LOG AND HAVE_EXP)
+    target_link_libraries(MathFunctions PRIVATE m)
+  endif()
+endif()
+```
+接着,在文件TutorialConfig.h.in增加新的宏,这些宏会在源代码文件mysqrt.cxx中用到.
+```
+// 平台是否支持log和exp函数
+#cmakedefine HAVE_LOG
+#cmakedefine HAVE_EXP
+```
+如果平台具备log和exp函数,我们将在mysqrt函数中使用它们来计算平方根.在MathFunctions/mysqrt.cxx的mysqrt函数中增加下面的代码.(不要忘记返回语句前的#endif)
+```
+#if defined(HAVE_LOG) && defined(HAVE_EXP)
+  double result = exp(log(x) * 0.5);
+  std::cout << "Computing sqrt of " << x << " to be " << result
+            << " using log and exp" << std::endl;
+#else
+  double result = x;
+```
+我们还需要在源文件mysqrt.cxx中包含头文件cmath
+```
+#include <cmath>
+```
+运行cmake或cmake-gui配置项目,然后使用指定的构建工具执行构建动作并运行生成的可执行文件.
+你将会注意到,我们并没有向期望的那样用到log和exp函数.原来我们在源文件mysqrt.cxx中忘记包含头文件TutorialConfig.h了.
+此外,还需要更新MathFunctions/CMakeLists.txt文件,使源文件mysqrt.cxx能找到头文件TutorialConfig.h的位置.
+```
+target_include_directories(MathFunctions
+          INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}
+          PRIVATE ${CMAKE_BINARY_DIR}
+          )
+```
+在更新完成后,重新构建并运行程序.看看哪个函数得到了更准确的结果?sqrt还是mysqrt?
+
+### 指定编译宏 ###
+有没有比头文件TutorialConfig.h更好的地方用来保存HAVE_LOG和HAVE_EXP宏?试试target_compile_definitions()函数吧.
+首先从配置文件TutorialConfig.h.in中移除宏.源文件mysqrt.cxx也不再需要包含TutorialConfig.h头文件.
+接着,将HAVE_LOG和HAVE_EXP宏移至MathFunctions/CMakeLists.txt并将它们指定为PRIVATE编译宏.
+```
+include(CheckSymbolExists)
+check_symbol_exists(log "math.h" HAVE_LOG)
+check_symbol_exists(exp "math.h" HAVE_EXP)
+if(NOT (HAVE_LOG AND HAVE_EXP))
+  unset(HAVE_LOG CACHE)
+  unset(HAVE_EXP CACHE)
+  set(CMAKE_REQUIRED_LIBRARIES "m")
+  check_symbol_exists(log "math.h" HAVE_LOG)
+  check_symbol_exists(exp "math.h" HAVE_EXP)
+  if(HAVE_LOG AND HAVE_EXP)
+    target_link_libraries(MathFunctions PRIVATE m)
+  endif()
+endif()
+
+# add compile definitions
+if(HAVE_LOG AND HAVE_EXP)
+  target_compile_definitions(MathFunctions
+                             PRIVATE "HAVE_LOG" "HAVE_EXP")
+endif()
+```
+更新完成后重新构建和运行可执行程序,检查运行结果.
