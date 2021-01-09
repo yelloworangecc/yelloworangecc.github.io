@@ -5,6 +5,7 @@ summary: CMake是一个跨平台的编译构建工具,我接触过的开源库Op
 featured-img: sleek
 # categories: jekyll update
 ---
+
 ## 目录 ##
 * CMake教程
     + 简介
@@ -26,6 +27,7 @@ featured-img: sleek
     + 增加生成表达式
     + 增加导出配置
     + 调试版本和发布版本打包
+    
 ## 简介 ##
 这篇CMake教程提供了对于解决通用构建系统问题的循序渐进的指导.文章将不同的主题在一个示例项目中得到呈现,对于读者理解非常有帮助.教程文档和代码示例位于CMake源码树下的Help/guide/tutorial文件夹中.教程的每一个步骤都有一个子目录,包含了相关代码.教程中的示例是渐进的,后一个步骤完全包含了前一个步骤的内容.
 
@@ -369,3 +371,90 @@ if(HAVE_LOG AND HAVE_EXP)
 endif()
 ```
 更新完成后重新构建和运行可执行程序,检查运行结果.
+
+## 步骤6 增加自定义命令和生成文件 ##
+假设,为了实现这个教程的目标,我们决定不使用平台的log和exp函数,我们在mysqrt函数中使用一个预先计算好的数值表来代替.这一节,我们在构建过程中创建一个表,然后将表编译到应用程序中.
+首先,移除MathFunctions/CMakeLists.txt中检查log和exp函数的内容.接着移除mysqrt.cxx中检查宏HAVE_LOG和HAVE_EXP的内容,同时移除cmath头文件包含语句.
+在MathFunctions创建一个新的源文件用来生成数值表.
+数值表是由合法的C++代码产生的,传入的参数是输出文件名.
+下一步,在MathFunctions/CMakeLists.txt文件中添加一些用来构建可执行文件并在整个应用程序的构建过程中运行这个可执行程序的命令.
+在MathFunctions/CMakeLists.txt文件的顶部,添加二进制MakeTable目标.
+```
+add_executable(MakeTable MakeTable.cxx)
+```
+继续添加自定义命令来控制Table.h的生成.
+```
+add_custom_command(
+  OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/Table.h
+  COMMAND MakeTable ${CMAKE_CURRENT_BINARY_DIR}/Table.h
+  DEPENDS MakeTable
+  )
+```
+我们需要让CMake知道mysqrt.cxx依赖于生成的Table.将Table.h添加到MathFunctions库的源文件列表中.
+```
+add_library(MathFunctions
+            mysqrt.cxx
+            ${CMAKE_CURRENT_BINARY_DIR}/Table.h
+            )
+```
+还需要将二进制生成目录添加到头文件目录列表,使Table.h能够被找到.
+```
+target_include_directories(MathFunctions
+          INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}
+          PRIVATE ${CMAKE_CURRENT_BINARY_DIR}
+          )
+```
+现在我们来使用生成的数值表.首先,修改mysqrt.cxx包含头文件Table.h.接着,重写mysqrt函数来使用数值表.
+```
+double mysqrt(double x)
+{
+  if (x <= 0) {
+    return 0;
+  }
+
+  // 使用数值表来查找初始化值
+  double result = x;
+  if (x >= 1 && x < 10) {
+    std::cout << "Use the table to help find an initial value " << std::endl;
+    result = sqrtTable[static_cast<int>(x)];
+  }
+
+  // 10次迭代
+  for (int i = 0; i < 10; ++i) {
+    if (result <= 0) {
+      result = 0.1;
+    }
+    double delta = x - (result * result);
+    result = result + 0.5 * delta / result;
+    std::cout << "Computing sqrt of " << x << " to be " << result << std::endl;
+  }
+
+  return result;
+}
+```
+运行cmake或cmake-guil来配置工程并使用指定的构建工具执行构建动作.
+在构建时,首先CMake首先构建MakeTable可执行文件,然后运行他来生成Table.h.最后,编译包含了Table.h头文件的mysqrt.cxx来生成MathFunctions库.
+运行Tutorial可执行程序并验证它是否使用了数值表.
+
+## 步骤7 构建一个安装器 ##
+下一步,假设我们想要分发我们的项目给别人使用.我们想要在多种平台同时提供二进制和源代码.这与我们步骤4中描述的安装过程有一些区别.之前是先构建源代码然后安装得到的二进制文件.这个例子中,我们构建支持二进制安装和包管理的安装包.我们将会用到CPack来创建特定平台的安装器.特别地,我们需要向顶层CMakeLists.txt文件的底部添加下面内容.
+```
+include(InstallRequiredSystemLibraries)
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/License.txt")
+set(CPACK_PACKAGE_VERSION_MAJOR "${Tutorial_VERSION_MAJOR}")
+set(CPACK_PACKAGE_VERSION_MINOR "${Tutorial_VERSION_MINOR}")
+include(CPack)
+```
+这样就完成了!InstallRequiredSystemLibraries模块将会包含所有项目用到的当前平台的运行时库.接着,我们为工程设置了一些保存许可和版本信息的变量.版本信息在本教程的前面步骤已经设置过,这个步骤中我们在顶层源文件目录下添加了license.txt文件.
+最后我们将CPack模块包含进来,CPack会用到上面的变量和当前系统的一些属性来设置一个安装器.
+下一步,构建项目然后运行cpack可执行程序.构建二进制安装包的话,在二进制目录下运行`cpack`.
+要指定生成器的话指定-G选项.对于多配置构建,使用-C选项来指定配置.下面是一个例子.
+```
+cpack -G ZIP -C Debug
+```
+构建源代码安装包的话运行下面的命令.
+```
+cpack --config CPackSourceConfig.cmake
+```
+也可以运行make package,或者在IDE中右击Package目标,点击Build Project.
+在二进制目录下找到安装器,运行安装器可执行文件,检查它是否生效.
