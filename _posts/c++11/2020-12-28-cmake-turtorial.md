@@ -458,3 +458,163 @@ cpack --config CPackSourceConfig.cmake
 ```
 也可以运行make package,或者在IDE中右击Package目标,点击Build Project.
 在二进制目录下找到安装器,运行安装器可执行文件,检查它是否生效.
+
+## 步骤8 增加对仪表盘的支持 ##
+将我们的测试结果加入到仪表盘不是一个难事.在之前的步骤中我们已经定义了一些列的测试用例.现在我们只需要运行这些测试用例,并将它们提交到仪表盘.我们需要在顶层CMakeLists.txt中包含CTest模块来获得对仪表盘的支持.
+用`include(CTest)`替换`enable_testing()`.CTest模块会自动调用enable_testing()函数.我们还需要在顶层目录下创建一个CTestConfig.cmake文件,这个文件用来设置工程的名称和仪表盘的位置.
+```
+set(CTEST_PROJECT_NAME "CMakeTutorial")
+set(CTEST_NIGHTLY_START_TIME "00:00:00 EST")
+
+set(CTEST_DROP_METHOD "http")
+set(CTEST_DROP_SITE "my.cdash.org")
+set(CTEST_DROP_LOCATION "/submit.php?project=CMakeTutorial")
+set(CTEST_DROP_SITE_CDASH TRUE)
+```
+ctest可执行程序在运行时会读取这个文件.可以通过cmake或cmake-gui来为工程配置一个简单的仪表盘,先不要执行构建动作,进入二进制目录后运行`ctest [-VV] -D Experimental`.对于多配置生成器(比如Visual Studio),还必须指定配置类型.
+```
+ctest [-VV] -C Debug -D Experimental
+```
+如果是在IDE环境下,构建Experimental目标即可.
+ctest可执行程序会构建并测试工程,然后将结果提交到[Kitware’s的公共仪表盘](https://my.cdash.org/index.php?project=CMakeTutorial).
+
+## 步骤9 混合使用静态和动态库 ##
+这一节我们学习如何使用BUILD_SHARED_LIBS变量改变add_library()函数的默认行为,以及无需显示指定(STATIC,SHARED,MODULE,OBJECT)的情况下控制库的构建类型.
+我们需要在顶层CMakeLists.txt文件中增加BUILD_SHARED_LIBS变量.命令option()允许用户选择变量值为ON或OFF.
+下一步我们重构MathFunctions,使其成为一个包装了mysqrt和sqrt的真正的库,不再需要调用代码中的控制逻辑.这也意味着USE_MYMATH将不再控制MathFunctions的构建过程,而是控制库的行为.
+第一步,更新顶层CMakeLists.txt的开头部分.
+```
+cmake_minimum_required(VERSION 3.10)
+# 设置工程名称和版本
+project(Tutorial VERSION 1.0)
+# 指定C++标准
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED True)
+# 设置静态和动态库的生成路径
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}")
+option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
+# 配置一个头文件用来传入版本号
+configure_file(TutorialConfig.h.in TutorialConfig.h)
+# 添加MathFunctions库目标
+add_subdirectory(MathFunctions)
+# 添加一个可执行目标
+add_executable(Tutorial tutorial.cxx)
+target_link_libraries(Tutorial PUBLIC MathFunctions)
+```
+既然现在我们总是使用MathFunctions库,那么我们需要相应地更新库的代码逻辑.在MathFunctions/CMakeLists.txt文件中,我们创建一个SqrtLibrary,它会在USE_MYMATH被使能的条件下被构建.在本教程中,我们显示地将SqrtLibrary构建为静态库.MathFunctions/CMakeLists.txt文件的结尾部分如下.
+```
+# 添加一个库目标
+add_library(MathFunctions MathFunctions.cxx)
+# 使链接库的对象可以找到库的头文件
+target_include_directories(MathFunctions
+                           INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}
+                           )
+
+# 是否使用自定义函数
+option(USE_MYMATH "Use tutorial provided math implementation" ON)
+if(USE_MYMATH)
+  target_compile_definitions(MathFunctions PRIVATE "USE_MYMATH")
+  # 添加用来生成数值表的可执行目标
+  add_executable(MakeTable MakeTable.cxx)
+  # 添加生成代码的命令
+  add_custom_command(
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/Table.h
+    COMMAND MakeTable ${CMAKE_CURRENT_BINARY_DIR}/Table.h
+    DEPENDS MakeTable
+    )
+  # 计算平方根的静态库
+  add_library(SqrtLibrary STATIC
+              mysqrt.cxx
+              ${CMAKE_CURRENT_BINARY_DIR}/Table.h
+              )
+
+  # Table.h的包含路径
+  target_include_directories(SqrtLibrary PRIVATE
+                             ${CMAKE_CURRENT_BINARY_DIR}
+                             )
+  target_link_libraries(MathFunctions PRIVATE SqrtLibrary)
+endif()
+
+# 定义windows平台declspec(dllexport)相关的符号
+target_compile_definitions(MathFunctions PRIVATE "EXPORTING_MYMATH")
+
+# 安装规则
+set(installable_libs MathFunctions)
+if(TARGET SqrtLibrary)
+  list(APPEND installable_libs SqrtLibrary)
+endif()
+install(TARGETS ${installable_libs} DESTINATION lib)
+install(FILES MathFunctions.h DESTINATION include)
+```
+下一步,更新MathFunctions/mysqrt.cxx来使用mathfunctions和detail命名空间.
+```
+#include <iostream>
+
+#include "MathFunctions.h"
+
+// 包含生成的数值表
+#include "Table.h"
+
+namespace mathfunctions {
+namespace detail {
+// 一个简单的计算平方根的函数
+double mysqrt(double x)
+{
+  if (x <= 0) {
+    return 0;
+  }
+
+  // 使用数值表来查找一个初始值
+  double result = x;
+  if (x >= 1 && x < 10) {
+    std::cout << "Use the table to help find an initial value " << std::endl;
+    result = sqrtTable[static_cast<int>(x)];
+  }
+
+  // 10次迭代
+  for (int i = 0; i < 10; ++i) {
+    if (result <= 0) {
+      result = 0.1;
+    }
+    double delta = x - (result * result);
+    result = result + 0.5 * delta / result;
+    std::cout << "Computing sqrt of " << x << " to be " << result << std::endl;
+  }
+
+  return result;
+}
+}
+}
+```
+我们还需要在tutorial.cxx文件中做一些修改:
+1. 总是包含头文件MathFunctions.h
+2. 总是使用mathfunctions::sqrt
+3. 不在包含cmath
+最后,更新MathFunctions/MathFunctions.h来使用dll导出定义.
+```
+#if defined(_WIN32)
+#  if defined(EXPORTING_MYMATH)
+#    define DECLSPEC __declspec(dllexport)
+#  else
+#    define DECLSPEC __declspec(dllimport)
+#  endif
+#else // non windows
+#  define DECLSPEC
+#endif
+
+namespace mathfunctions {
+double DECLSPEC sqrt(double x);
+}
+```
+此时,如果我们开始编译的话,会出现链接错误,提示我们正在混合使用位置相关代码的静态库和位置无关代码的库.解决方法是不管构建类型为何,设置SqrtLibrary的属性POSITION_INDEPENDENT_CODE的值为真.
+```
+# 当默认是共享库时,设置SqrtLibrary需要PIC
+  set_target_properties(SqrtLibrary PROPERTIES
+                        POSITION_INDEPENDENT_CODE ${BUILD_SHARED_LIBS}
+                        )
+
+  target_link_libraries(MathFunctions PRIVATE SqrtLibrary)
+```
+练习:你能否通过查找CMake文档找到一个模块来简化我们在MathFunctions.h中添加的dll导出定义?
