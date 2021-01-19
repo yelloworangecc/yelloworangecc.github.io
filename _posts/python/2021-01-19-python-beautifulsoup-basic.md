@@ -47,6 +47,7 @@ soup = BeautifulSoup(content,features="html5lib")
 定位到目标标签内容.并将beautiful soup的navigable string 转换成普通unicode字符串.
 * beautiful soup可以通过".+标签的名称"的方式访问标签的内容,例如soup.body可以访问`<body>...</body>`标签内的所有内容.
 * 存在多个同名子标签时,需要使用标签的.contents属性,这个属性可以将标签的子节点以列表的方式输出.
+
 ```
 unicode_result = str(soup.body.contents[1].contents[7].tbody.tr.contents[3].table.tbody.tr.td.contents[7].table.tbody)
 ```
