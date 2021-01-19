@@ -15,7 +15,7 @@ pip install beautifulsoup4
 ```
 
 ## 目标页面 ##
-![目标页面](/pics/target_page "目标页面")
+![目标页面](/pics/target_page.jpg "目标页面")
 
 ## 代码分析 ##
 全部代码如下.
