@@ -31,7 +31,7 @@ featured-img: sleek
 ## 简介 ##
 这篇CMake教程提供了对于解决通用构建系统问题的循序渐进的指导.文章将不同的主题在一个示例项目中得到呈现,对于读者理解非常有帮助.教程文档和代码示例位于CMake源码树下的Help/guide/tutorial文件夹中.教程的每一个步骤都有一个子目录,包含了相关代码.教程中的示例是渐进的,后一个步骤完全包含了前一个步骤的内容.
 
-## 步骤一 开始 ##
+## 步骤1 开始 ##
 最基本的项目是从源代码编译一个可执行程序.例如,一个只有3行内容的CMakeLists.txt,将是我们开始教程的地方.在Step1的文件夹内创建一个CMakeLists.txt包含下面内容:
 ```
 cmake_minimum_required(VERSION 3.10)
@@ -121,7 +121,7 @@ Tutorial 10
 Tutorial
 ```
 
-## 步骤二 增加一个库 ##
+## 步骤2 增加一个库 ##
 现在我们将向项目中增加一个库.这个库包含我们自己实现的用来计算一个数的平方根的功能.可执行程序随后可以用这个库代替编译器提供的标准库中的求平方根函数.
 本教程中,我们将库放到MathFunctions子目录.这个目录中已经有一个头文件MathFunctions.h和源文件mysqrt.cxx.源文件中有一个叫mysqrt的函数,实现了编译器中sqrt函数相似的功能.
 在MathFunctions子目录下增加CMakeLists.txt文件,文件包含下面的一行内容.
@@ -201,7 +201,7 @@ cmake .. -DUSE_MYMATH=OFF
 重新构建和运行tutorial程序.
 sqrt和mysqrt哪一个函数得到的值更准确?
 
-## 步骤三 增加库的使用要求 ##
+## 步骤3 增加库的使用要求 ##
 "使用要求"允许对库或可执行文件的链接和包含关系进行更好的控制,同时对CMake内部目标的传递属性给与更多控制.涉及的主要命令如下.
 ```
 target_compile_definitions()
@@ -231,7 +231,7 @@ target_include_directories(Tutorial PUBLIC
 ```
 完成后,在构建目录中运行cmake或cmake-gui配置项目并使用你指定的构建工具执行构建动作即可.
 
-## 步骤四 安装和测试 ##
+## 步骤4 安装和测试 ##
 现在,我们可以给我们的项目添加安装规则和测试支持.
 
 ### 安装规则 ###
@@ -591,6 +591,7 @@ double mysqrt(double x)
 1. 总是包含头文件MathFunctions.h
 2. 总是使用mathfunctions::sqrt
 3. 不在包含cmath
+
 最后,更新MathFunctions/MathFunctions.h来使用dll导出定义.
 ```
 #if defined(_WIN32)
