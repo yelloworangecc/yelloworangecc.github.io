@@ -6,3 +6,4 @@ _site/
 .bundle
 .jekyll-metadata
 Gemfile.lock
+.jekyll-cache
