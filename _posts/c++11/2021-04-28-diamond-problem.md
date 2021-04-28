@@ -45,11 +45,11 @@ class radio: public transmitter, public receiver
 }
 ```
 
-由于transmitter和receiver类都会使用基类中的write方法,当radio对象调用write会产生歧义,编译器不清楚要使用write的哪一个实现版本(transmitter的还是receiver的).
+由于transmitter类和receiver类都有基类中的write方法,当radio对象调用write会产生歧义,编译器不清楚要使用write的哪一个版本(transmitter的还是receiver的).
 
-为了弄清楚这个问题,先来看下对象在内存中是如何表示的.继承会简单的将两个对象一次排列,但是上面这个例子中,radio同时是transmitter和receiver的子类,所以storable类会在radio对象中存在两份.编译时,g++编译器会报错: 'request for member "write" is ambiguous',因为编译器无法区分调用哪一个write方法.
+为了弄清楚这个问题,先来看下对象在内存中是如何表示的.多种继承机制会简单的将两个对象在内存中依次排列,上面这个例子中,radio同时是transmitter和receiver的子类,所以storable类会在radio对象中存在两份.在编译时,g++编译器会报错: 'request for member "write" is ambiguous',因为编译器无法区分调用哪一个write方法.
 
-幸运的是,C++提供了虚拟继承来解决这个问题.为了阻止编译器给出这样的错误,从基类storable继承的两个类都使用虚拟继承.
+幸运的是,C++提供了虚拟继承来解决这个问题.为了阻止编译器给出这样的错误,从基类storable继承的两个类都使用虚继承关键字virtual.
 
 ```
 class transmitter: public virtual storable 
@@ -67,11 +67,11 @@ class receiver: public virtual storable
 } 
 ```
 
-当我们使用虚拟继承时,公共的基类只有一个实例.也就是说,radio类将只包含一个storable类的实例,这个实例会被transmitter类和receiver类共享.这样就消除了歧义,代码就可以正常编译了.
+当我们使用虚继承时,公共的基类只有一个实例.也就是说,radio类将只包含一个storable类的实例,这个实例会被transmitter类和receiver类共享.这样就消除了歧义,代码就可以正常编译了.
 
 ### 虚继承的内存分布 ###
 
-为了能追踪storable类的实例,编译器必须为transmitter和receiver类提供一个虚函数表.当radio对象被创建时,首先创建一个storable实例,接着transmitter实例和receiver实例.transmitter和receiver类在虚函数表有一个虚指针,存储了storable实例在内存中的偏移量.当这两个类要访问storable类中的成员时,就可以通过这个虚指针来找到storable实例,进而找到storable的成员.
+为了能追踪storable类的实例,编译器必须为transmitter类和receiver类提供一个虚函数表.当radio对象被创建时,首先创建一个storable实例,接着transmitter实例和receiver实例.transmitter类和receiver类在它们的虚函数表有一个虚指针,存储了storable实例在内存中的偏移量.当这两个类要访问storable类中的成员时,就可以通过这个虚指针来找到storable实例,进而找到storable的成员.
 
 ## 构造函数与虚继承 ##
 
@@ -145,3 +145,159 @@ int main()
 ## C++多重继承的其他问题 ##
 
 当你在使用想radio这样的基于虚继承的类时,应当尽量避免C风格的类型转换,而应使用C++的dynamic_cast来替代.这种转换会进行运行时检查,确保要转换的类存在继承关系.否则,转换的结果会是一个空指针,或者在使用引用时抛出bad_cast异常.
+
+## 内存分布与构造析构顺序实验 ##
+
+实验代码如下.
+
+```
+#include<iostream>
+using namespace std;
+
+class storable //类transmitter和receiver会从这个基类继承
+{
+public: 
+  storable():p_s1(0),p_s2(0){ cout << "storable constructed\n";}
+  virtual void read(){ cout << "storable read\n"; }
+  virtual void write(){ cout << "storable write\n"; }
+  virtual ~storable(){ cout << "storable destructed\n"; }
+private:
+  unsigned long long p_s1;
+  unsigned long long p_s2;
+};
+
+class transmitter: virtual public storable 
+{
+public:
+  transmitter():p_t(1){ cout << "transmitter constructed\n";}
+  void write(){ cout << "transmitter write\n"; }
+  ~transmitter(){ cout << "transmitter destructed\n"; }
+private:
+  unsigned long long p_t;
+};
+ 
+class receiver: virtual public storable
+{
+public:
+  receiver():p_r(2){ cout << "receiver constructed\n";}
+  void read(){ cout << "receiver read\n"; }
+  ~receiver(){ cout << "receiver destructed\n"; }
+private:
+  unsigned long long p_r;
+};
+ 
+class radio: public transmitter, public receiver
+{
+public:
+  radio():p_add(3){ cout << "radio constructed\n";}
+  void read(){ cout << "radio read\n"; }
+  ~radio(){ cout << "radio destructed\n"; }
+private:
+  unsigned long long p_add;
+};
+
+int main(void)
+{
+  radio r;
+  cout << "radio size " << sizeof(r) << " bytes" << endl;
+  unsigned long long * ptr = (unsigned long long*)&r;
+  for (int i = 0; i < sizeof(r) / 8; ++i)
+  {
+      cout << *ptr << endl;
+      ++ptr;
+  }
+  return 0;
+}
+
+```
+
+非虚继承的运行结果如下.
+
+```
+$g++ -o run virtual_inheritance.cpp  && ./run
+storable constructed
+transmitter constructed
+storable constructed
+receiver constructed
+radio constructed
+radio size 72 bytes
+
+140696106780432
+0
+0
+1
+140696106780480
+0
+0
+2
+3
+
+radio destructed
+receiver destructed
+storable destructed
+transmitter destructed
+storable destructed
+
+```
+
+推测的radio对象内存结构如下.
+
+```
+
+|--------------------------|
+| vptr of transmitter 8    |
+| data of storable    8x2  |
+| data of transmitter 8    |
+|--------------------------|
+| vptr of receiver    8    |
+| data of storable    8x2  |
+| data of receiver    8    |
+|--------------------------|
+| data of radio       8    |
+|--------------------------|
+```
+
+虚继承的运行结果如下.
+
+```
+$g++ -o run virtual_inheritance.cpp  && ./run
+storable constructed
+transmitter constructed
+receiver constructed
+radio constructed
+radio size 64 bytes
+
+140702825531464
+1
+140702825531520
+2
+3
+140702825531584
+0
+0
+
+transmitter write
+radio destructed
+receiver destructed
+transmitter destructed
+storable destructed
+
+```
+
+推测的radio对象内存结构如下.
+
+```
+|--------------------------|
+| vptr of transmitter 8    |
+| data of transmitter 8    |
+|--------------------------|
+| vptr of receiver    8    |
+| data of receiver    8    |
+|--------------------------|
+| data of radio       8    |
+|--------------------------|
+| vptr of storable    8    |
+| data of storable    8x2  |
+|--------------------------|
+
+```
