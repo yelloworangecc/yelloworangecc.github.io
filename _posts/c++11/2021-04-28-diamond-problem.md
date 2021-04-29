@@ -1,13 +1,13 @@
 ---
 layout: post
-title:  "使用虚继承解决砖石问题"
+title:  "使用虚继承解决钻石问题"
 summary: C++多重继承非常强大,但是很难用,使用不慎容易出问题.本文讲述如何使用虚继承来解决多重继承带来的常见问题.
 featured-img: sleek
 ---
 
 [原文链接](https://www.cprogramming.com/tutorial/virtual_inheritance.html "原文链接")
 
-## 砖石问题 ##
+## 钻石问题 ##
 
 钻石问题是多重继承带来的一类问题.下面是一段描述钻石问题的代码.
 
